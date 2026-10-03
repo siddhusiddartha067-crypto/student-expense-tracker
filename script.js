@@ -237,3 +237,4 @@ function updateSummary() {
 // Load saved data
 displayExpenses();
 updateSummary();
+          
