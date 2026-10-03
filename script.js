@@ -1,5 +1,5 @@
 // ==========================================
-// STUDENT EXPENSE TRACKER - ANALYTICS
+// STUDENT EXPENSE TRACKER - FINAL SCRIPT
 // ==========================================
 
 const expenseForm = document.getElementById("expenseForm");
@@ -18,6 +18,11 @@ const remainingDisplay = document.getElementById("remaining");
 const expenseList = document.getElementById("expenseList");
 const expenseCount = document.getElementById("expenseCount");
 
+
+// ==========================================
+// LOAD SAVED DATA
+// ==========================================
+
 let expenses =
   JSON.parse(localStorage.getItem("expenses")) || [];
 
@@ -32,17 +37,22 @@ let editingId = null;
 // ==========================================
 
 function saveExpenses() {
+
   localStorage.setItem(
     "expenses",
     JSON.stringify(expenses)
   );
+
 }
 
+
 function saveBudget() {
+
   localStorage.setItem(
     "budget",
     budget
   );
+
 }
 
 
@@ -82,10 +92,11 @@ expenseForm.addEventListener(
       );
 
       return;
+
     }
 
 
-    // UPDATE
+    // UPDATE EXISTING EXPENSE
     if (editingId !== null) {
 
       expenses =
@@ -94,11 +105,17 @@ expenseForm.addEventListener(
           if (expense.id === editingId) {
 
             return {
+
               id: expense.id,
+
               name: name,
+
               amount: amount,
+
               category: category,
+
               date: date
+
             };
 
           }
@@ -123,7 +140,7 @@ expenseForm.addEventListener(
     }
 
 
-    // ADD
+    // ADD NEW EXPENSE
     else {
 
       const newExpense = {
@@ -186,6 +203,7 @@ function displayExpenses() {
     updateAnalytics();
 
     return;
+
   }
 
 
@@ -287,6 +305,7 @@ function editExpense(id) {
     );
 
     return;
+
   }
 
 
@@ -367,7 +386,7 @@ function deleteExpense(id) {
 
 
 // ==========================================
-// SET BUDGET
+// SET MONTHLY BUDGET
 // ==========================================
 
 setBudgetButton.addEventListener(
@@ -388,6 +407,7 @@ setBudgetButton.addEventListener(
       );
 
       return;
+
     }
 
 
@@ -474,20 +494,26 @@ function updateBudgetAlert(
     alertBox =
       document.createElement("div");
 
+
     alertBox.id =
       "budgetAlert";
+
 
     alertBox.style.margin =
       "15px 0";
 
+
     alertBox.style.padding =
       "15px";
+
 
     alertBox.style.borderRadius =
       "12px";
 
+
     alertBox.style.fontWeight =
       "bold";
+
 
     alertBox.style.textAlign =
       "center";
@@ -525,6 +551,7 @@ function updateBudgetAlert(
     (totalSpent / budget) * 100;
 
 
+  // OVER BUDGET
   if (remaining < 0) {
 
     alertBox.textContent =
@@ -532,14 +559,18 @@ function updateBudgetAlert(
         remaining
       ).toFixed(2)}.`;
 
+
     alertBox.style.background =
       "#fee2e2";
+
 
     alertBox.style.color =
       "#b91c1c";
 
   }
 
+
+  // 90% OR MORE
   else if (percentage >= 90) {
 
     alertBox.textContent =
@@ -547,14 +578,18 @@ function updateBudgetAlert(
         2
       )} remaining.`;
 
+
     alertBox.style.background =
       "#ffedd5";
+
 
     alertBox.style.color =
       "#c2410c";
 
   }
 
+
+  // 70% OR MORE
   else if (percentage >= 70) {
 
     alertBox.textContent =
@@ -562,14 +597,18 @@ function updateBudgetAlert(
         0
       )}% used.`;
 
+
     alertBox.style.background =
       "#fef3c7";
+
 
     alertBox.style.color =
       "#92400e";
 
   }
 
+
+  // HEALTHY
   else {
 
     alertBox.textContent =
@@ -577,8 +616,10 @@ function updateBudgetAlert(
         2
       )} remaining.`;
 
+
     alertBox.style.background =
       "#dcfce7";
+
 
     alertBox.style.color =
       "#166534";
@@ -589,7 +630,7 @@ function updateBudgetAlert(
 
 
 // ==========================================
-// ANALYTICS DASHBOARD
+// SPENDING ANALYTICS
 // ==========================================
 
 function updateAnalytics() {
@@ -605,20 +646,26 @@ function updateAnalytics() {
     analytics =
       document.createElement("section");
 
+
     analytics.id =
       "analyticsDashboard";
+
 
     analytics.style.background =
       "white";
 
+
     analytics.style.padding =
       "20px";
+
 
     analytics.style.borderRadius =
       "16px";
 
+
     analytics.style.marginBottom =
       "18px";
+
 
     analytics.style.boxShadow =
       "0 4px 15px rgba(0,0,0,0.07)";
@@ -640,16 +687,29 @@ function updateAnalytics() {
   }
 
 
+  // NO EXPENSES
   if (expenses.length === 0) {
 
     analytics.innerHTML = `
-      <h2>📊 Spending Analytics</h2>
-      <p style="color:#6b7280;margin-top:10px;">
-        Add expenses to see your spending analytics.
+
+      <h2>
+        📊 Spending Analytics
+      </h2>
+
+      <p
+        style="
+          color:#6b7280;
+          margin-top:10px;
+        "
+      >
+        Add expenses to see your
+        spending analytics.
       </p>
+
     `;
 
     return;
+
   }
 
 
@@ -658,8 +718,7 @@ function updateAnalytics() {
 
 
   const todayString =
-    today.toISOString()
-      .split("T")[0];
+    getLocalDateString(today);
 
 
   const currentYear =
@@ -670,7 +729,7 @@ function updateAnalytics() {
     today.getMonth();
 
 
-  // TODAY
+  // TODAY'S SPENDING
   const todaySpent =
     expenses
       .filter(function (expense) {
@@ -688,12 +747,13 @@ function updateAnalytics() {
       }, 0);
 
 
-  // MONTH
+  // THIS MONTH'S EXPENSES
   const monthExpenses =
     expenses.filter(function (expense) {
 
       const date =
-        new Date(expense.date);
+        parseDateLocal(expense.date);
+
 
       return (
         date.getFullYear() === currentYear &&
@@ -703,6 +763,7 @@ function updateAnalytics() {
     });
 
 
+  // THIS MONTH'S SPENDING
   const monthSpent =
     monthExpenses.reduce(
       function (total, expense) {
@@ -732,7 +793,7 @@ function updateAnalytics() {
     );
 
 
-  // CATEGORY ANALYSIS
+  // CATEGORY TOTALS
   const categoryTotals = {};
 
 
@@ -762,6 +823,7 @@ function updateAnalytics() {
   );
 
 
+  // TOP CATEGORY
   let topCategory =
     "None";
 
@@ -783,6 +845,7 @@ function updateAnalytics() {
         topCategory =
           category;
 
+
         topCategoryAmount =
           categoryTotals[category];
 
@@ -793,21 +856,55 @@ function updateAnalytics() {
 
 
   // AVERAGE DAILY SPENDING
+  const dates =
+    expenses
+      .map(function (expense) {
+
+        return parseDateLocal(
+          expense.date
+        );
+
+      })
+      .sort(function (a, b) {
+
+        return a - b;
+
+      });
+
+
   const firstExpenseDate =
+    dates[0];
+
+
+  const todayStart =
     new Date(
-      expenses[0].date
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
     );
+
+
+  const firstDateStart =
+    new Date(
+      firstExpenseDate.getFullYear(),
+      firstExpenseDate.getMonth(),
+      firstExpenseDate.getDate()
+    );
+
+
+  const millisecondsPerDay =
+    1000 * 60 * 60 * 24;
 
 
   const daysPassed =
     Math.max(
       1,
-      Math.ceil(
+      Math.floor(
         (
-          today -
-          firstExpenseDate
+          todayStart -
+          firstDateStart
         ) /
-        (1000 * 60 * 60 * 24)
+        millisecondsPerDay
       ) + 1
     );
 
@@ -831,6 +928,7 @@ function updateAnalytics() {
     daysPassed;
 
 
+  // ANALYTICS UI
   analytics.innerHTML = `
 
     <h2>
@@ -847,6 +945,7 @@ function updateAnalytics() {
         margin-top:15px;
       "
     >
+
 
       <div
         style="
@@ -956,6 +1055,7 @@ function updateAnalytics() {
 
       </div>
 
+
     </div>
 
   `;
@@ -964,13 +1064,15 @@ function updateAnalytics() {
 
 
 // ==========================================
-// TODAY'S DATE
+// SET TODAY'S DATE
 // ==========================================
 
 function setTodayDate() {
 
   if (!expenseDate) {
+
     return;
+
   }
 
 
@@ -978,24 +1080,61 @@ function setTodayDate() {
     new Date();
 
 
+  expenseDate.value =
+    getLocalDateString(today);
+
+}
+
+
+// ==========================================
+// LOCAL DATE STRING
+// ==========================================
+
+function getLocalDateString(date) {
+
   const year =
-    today.getFullYear();
+    date.getFullYear();
 
 
   const month =
     String(
-      today.getMonth() + 1
+      date.getMonth() + 1
     ).padStart(2, "0");
 
 
   const day =
     String(
-      today.getDate()
+      date.getDate()
     ).padStart(2, "0");
 
 
-  expenseDate.value =
-    `${year}-${month}-${day}`;
+  return `${year}-${month}-${day}`;
+
+}
+
+
+// ==========================================
+// PARSE DATE WITHOUT TIMEZONE PROBLEM
+// ==========================================
+
+function parseDateLocal(dateString) {
+
+  const parts =
+    dateString.split("-");
+
+
+  if (parts.length !== 3) {
+
+    return new Date(dateString);
+
+  }
+
+
+  return new Date(
+    Number(parts[0]),
+    Number(parts[1]) - 1,
+    Number(parts[2])
+  );
 
 }
 
@@ -1007,7 +1146,9 @@ function setTodayDate() {
 function formatDate(dateString) {
 
   if (!dateString) {
+
     return "";
+
   }
 
 
@@ -1016,7 +1157,9 @@ function formatDate(dateString) {
 
 
   if (parts.length !== 3) {
+
     return dateString;
+
   }
 
 
@@ -1034,8 +1177,10 @@ function escapeHTML(text) {
   const div =
     document.createElement("div");
 
+
   div.textContent =
-    text;
+    String(text);
+
 
   return div.innerHTML;
 
