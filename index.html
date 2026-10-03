@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Expense Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header class="header">
+    <h1>💰 Student Expense Tracker</h1>
+    <p>Manage your daily expenses easily</p>
+  </header>
+
+  <main class="container">
+
+    <section class="summary-grid">
+
+      <div class="card">
+        <span>Monthly Budget</span>
+        <h2 id="budget">₹0</h2>
+      </div>
+
+      <div class="card">
+        <span>Total Spent</span>
+        <h2 id="total">₹0</h2>
+      </div>
+
+      <div class="card">
+        <span>Remaining</span>
+        <h2 id="remaining">₹0</h2>
+      </div>
+
+    </section>
+
+    <section class="form-card">
+      <h2>Add Expense</h2>
+
+      <form id="expenseForm">
+
+        <input
+          type="text"
+          id="expenseName"
+          placeholder="Expense name"
+          required
+        >
+
+        <input
+          type="number"
+          id="expenseAmount"
+          placeholder="Amount (₹)"
+          min="1"
+          required
+        >
+
+        <select id="expenseCategory" required>
+          <option value="">Select category</option>
+          <option>Food</option>
+          <option>Travel</option>
+          <option>Education</option>
+          <option>Shopping</option>
+          <option>Recharge</option>
+          <option>Entertainment</option>
+          <option>Other</option>
+        </select>
+
+        <input
+          type="date"
+          id="expenseDate"
+          required
+        >
+
+        <button type="submit">+ Add Expense</button>
+
+      </form>
+    </section>
+
+    <section class="budget-card">
+      <h2>Set Monthly Budget</h2>
+
+      <div class="budget-row">
+        <input
+          type="number"
+          id="budgetInput"
+          placeholder="Enter budget (₹)"
+          min="0"
+        >
+
+        <button id="setBudget">Set Budget</button>
+      </div>
+    </section>
+
+    <section class="expenses-card">
+      <div class="section-title">
+        <h2>Recent Expenses</h2>
+        <span id="expenseCount">0 expenses</span>
+      </div>
+
+      <div id="expenseList">
+        <p class="empty">No expenses added yet.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>Student Expense Tracker © 2026</p>
+  </footer>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
