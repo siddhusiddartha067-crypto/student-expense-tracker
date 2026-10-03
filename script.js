@@ -1,10 +1,8 @@
-// ===============================
-// Student Expense Tracker
-// ===============================
+// ==========================================
+// STUDENT EXPENSE TRACKER - ANALYTICS
+// ==========================================
 
-// Get HTML elements
 const expenseForm = document.getElementById("expenseForm");
-
 const expenseName = document.getElementById("expenseName");
 const expenseAmount = document.getElementById("expenseAmount");
 const expenseCategory = document.getElementById("expenseCategory");
@@ -20,282 +18,341 @@ const remainingDisplay = document.getElementById("remaining");
 const expenseList = document.getElementById("expenseList");
 const expenseCount = document.getElementById("expenseCount");
 
+let expenses =
+  JSON.parse(localStorage.getItem("expenses")) || [];
 
-// ===============================
-// Load saved data
-// ===============================
+let budget =
+  Number(localStorage.getItem("budget")) || 0;
 
-let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
-
-let budget = Number(localStorage.getItem("budget")) || 0;
+let editingId = null;
 
 
-// ===============================
-// Save expenses
-// ===============================
+// ==========================================
+// SAVE DATA
+// ==========================================
 
 function saveExpenses() {
-  localStorage.setItem("expenses", JSON.stringify(expenses));
+  localStorage.setItem(
+    "expenses",
+    JSON.stringify(expenses)
+  );
 }
-
-
-// ===============================
-// Save budget
-// ===============================
 
 function saveBudget() {
-  localStorage.setItem("budget", budget);
+  localStorage.setItem(
+    "budget",
+    budget
+  );
 }
 
 
-// ===============================
-// Add Expense
-// ===============================
+// ==========================================
+// ADD / UPDATE EXPENSE
+// ==========================================
 
-expenseForm.addEventListener("submit", function (event) {
+expenseForm.addEventListener(
+  "submit",
+  function (event) {
 
-  event.preventDefault();
+    event.preventDefault();
 
-  const name = expenseName.value.trim();
-  const amount = Number(expenseAmount.value);
-  const category = expenseCategory.value;
-  const date = expenseDate.value;
+    const name =
+      expenseName.value.trim();
 
-  if (!name || !amount || !category || !date) {
-    alert("Please fill all expense details.");
-    return;
+    const amount =
+      Number(expenseAmount.value);
+
+    const category =
+      expenseCategory.value;
+
+    const date =
+      expenseDate.value;
+
+
+    if (
+      !name ||
+      !amount ||
+      amount <= 0 ||
+      !category ||
+      !date
+    ) {
+
+      alert(
+        "Please fill all expense details correctly."
+      );
+
+      return;
+    }
+
+
+    // UPDATE
+    if (editingId !== null) {
+
+      expenses =
+        expenses.map(function (expense) {
+
+          if (expense.id === editingId) {
+
+            return {
+              id: expense.id,
+              name: name,
+              amount: amount,
+              category: category,
+              date: date
+            };
+
+          }
+
+          return expense;
+
+        });
+
+
+      editingId = null;
+
+
+      const button =
+        expenseForm.querySelector(
+          "button[type='submit']"
+        );
+
+
+      button.textContent =
+        "+ Add Expense";
+
+    }
+
+
+    // ADD
+    else {
+
+      const newExpense = {
+
+        id: Date.now(),
+
+        name: name,
+
+        amount: amount,
+
+        category: category,
+
+        date: date
+
+      };
+
+
+      expenses.push(
+        newExpense
+      );
+
+    }
+
+
+    saveExpenses();
+
+    expenseForm.reset();
+
+    setTodayDate();
+
+    displayExpenses();
+
+    updateSummary();
+
+    updateAnalytics();
+
   }
-
-  if (amount <= 0) {
-    alert("Amount must be greater than ₹0.");
-    return;
-  }
-
-  const newExpense = {
-    id: Date.now(),
-    name: name,
-    amount: amount,
-    category: category,
-    date: date
-  };
-
-  expenses.push(newExpense);
-
-  saveExpenses();
-
-  expenseForm.reset();
-
-  displayExpenses();
-
-  updateSummary();
-
-  checkBudgetAlert();
-
-});
+);
 
 
-// ===============================
-// Display Expenses
-// ===============================
+// ==========================================
+// DISPLAY EXPENSES
+// ==========================================
 
 function displayExpenses() {
 
   expenseList.innerHTML = "";
+
 
   if (expenses.length === 0) {
 
     expenseList.innerHTML =
       '<p class="empty">No expenses added yet.</p>';
 
-    expenseCount.textContent = "0 expenses";
+    expenseCount.textContent =
+      "0 expenses";
 
     updateSummary();
 
+    updateAnalytics();
+
     return;
   }
 
 
-  const reversedExpenses = expenses.slice().reverse();
+  expenses
+    .slice()
+    .reverse()
+    .forEach(function (expense) {
+
+      const item =
+        document.createElement("div");
 
 
-  reversedExpenses.forEach(function (expense) {
-
-    const item = document.createElement("div");
-
-    item.className = "expense-item";
+      item.className =
+        "expense-item";
 
 
-    item.innerHTML = `
+      item.innerHTML = `
 
-      <div class="expense-info">
+        <div class="expense-info">
 
-        <h3>${escapeHTML(expense.name)}</h3>
+          <h3>
+            ${escapeHTML(expense.name)}
+          </h3>
 
-        <p>
-          ${escapeHTML(expense.category)}
-          •
-          ${formatDate(expense.date)}
-        </p>
+          <p>
+            ${escapeHTML(expense.category)}
+            •
+            ${formatDate(expense.date)}
+          </p>
 
-      </div>
-
-
-      <div class="expense-right">
-
-        <div class="expense-amount">
-          ₹${Number(expense.amount).toFixed(2)}
         </div>
 
 
-        <button
-          class="edit-btn"
-          onclick="editExpense(${expense.id})"
-        >
-          Edit
-        </button>
+        <div class="expense-right">
+
+          <div class="expense-amount">
+            ₹${Number(expense.amount).toFixed(2)}
+          </div>
 
 
-        <button
-          class="delete-btn"
-          onclick="deleteExpense(${expense.id})"
-        >
-          Delete
-        </button>
-
-      </div>
-
-    `;
+          <button
+            class="edit-btn"
+            onclick="editExpense(${expense.id})"
+          >
+            ✏️ Edit
+          </button>
 
 
-    expenseList.appendChild(item);
+          <button
+            class="delete-btn"
+            onclick="deleteExpense(${expense.id})"
+          >
+            🗑️ Delete
+          </button>
 
-  });
+        </div>
+
+      `;
+
+
+      expenseList.appendChild(item);
+
+    });
 
 
   expenseCount.textContent =
-    `${expenses.length} ${expenses.length === 1 ? "expense" : "expenses"}`;
+    `${expenses.length} ${
+      expenses.length === 1
+        ? "expense"
+        : "expenses"
+    }`;
 
 
   updateSummary();
 
+  updateAnalytics();
+
 }
 
 
-// ===============================
-// Edit Expense
-// ===============================
+// ==========================================
+// EDIT EXPENSE
+// ==========================================
 
 function editExpense(id) {
 
-  const expense = expenses.find(function (item) {
-    return item.id === id;
-  });
+  const expense =
+    expenses.find(function (item) {
+
+      return item.id === id;
+
+    });
 
 
   if (!expense) {
-    alert("Expense not found.");
+
+    alert(
+      "Expense not found."
+    );
+
     return;
   }
 
 
-  const newName = prompt(
-    "Enter expense name:",
-    expense.name
-  );
+  expenseName.value =
+    expense.name;
+
+  expenseAmount.value =
+    expense.amount;
+
+  expenseCategory.value =
+    expense.category;
+
+  expenseDate.value =
+    expense.date;
 
 
-  if (newName === null) {
-    return;
-  }
+  editingId =
+    id;
 
 
-  const newAmount = prompt(
-    "Enter amount:",
-    expense.amount
-  );
+  const button =
+    expenseForm.querySelector(
+      "button[type='submit']"
+    );
 
 
-  if (newAmount === null) {
-    return;
-  }
+  button.textContent =
+    "Update Expense";
 
 
-  const newCategory = prompt(
-    "Enter category:\nFood\nTravel\nEducation\nShopping\nRecharge\nEntertainment\nOther",
-    expense.category
-  );
+  expenseForm.scrollIntoView({
 
+    behavior: "smooth",
 
-  if (newCategory === null) {
-    return;
-  }
+    block: "center"
 
-
-  const newDate = prompt(
-    "Enter date (YYYY-MM-DD):",
-    expense.date
-  );
-
-
-  if (newDate === null) {
-    return;
-  }
-
-
-  const amountNumber = Number(newAmount);
-
-
-  if (!newName.trim()) {
-    alert("Expense name cannot be empty.");
-    return;
-  }
-
-
-  if (!amountNumber || amountNumber <= 0) {
-    alert("Please enter a valid amount.");
-    return;
-  }
-
-
-  expense.name = newName.trim();
-
-  expense.amount = amountNumber;
-
-  expense.category = newCategory.trim();
-
-  expense.date = newDate;
-
-
-  saveExpenses();
-
-  displayExpenses();
-
-  updateSummary();
-
-  checkBudgetAlert();
+  });
 
 }
 
 
-// ===============================
-// Delete Expense
-// ===============================
+// ==========================================
+// DELETE EXPENSE
+// ==========================================
 
 function deleteExpense(id) {
 
-  const confirmDelete = confirm(
-    "Are you sure you want to delete this expense?"
-  );
+  const confirmed =
+    confirm(
+      "Are you sure you want to delete this expense?"
+    );
 
 
-  if (!confirmDelete) {
+  if (!confirmed) {
+
     return;
+
   }
 
 
-  expenses = expenses.filter(function (expense) {
-    return expense.id !== id;
-  });
+  expenses =
+    expenses.filter(function (expense) {
+
+      return expense.id !== id;
+
+    });
 
 
   saveExpenses();
@@ -304,68 +361,77 @@ function deleteExpense(id) {
 
   updateSummary();
 
-  checkBudgetAlert();
+  updateAnalytics();
 
 }
 
 
-// ===============================
-// Set Monthly Budget
-// ===============================
+// ==========================================
+// SET BUDGET
+// ==========================================
 
-setBudgetButton.addEventListener("click", function () {
+setBudgetButton.addEventListener(
+  "click",
+  function () {
 
-  const newBudget = Number(budgetInput.value);
+    const newBudget =
+      Number(budgetInput.value);
 
 
-  if (newBudget < 0 || isNaN(newBudget)) {
-    alert("Please enter a valid budget.");
-    return;
+    if (
+      !newBudget ||
+      newBudget <= 0
+    ) {
+
+      alert(
+        "Please enter a budget greater than ₹0."
+      );
+
+      return;
+    }
+
+
+    budget =
+      newBudget;
+
+
+    saveBudget();
+
+
+    budgetInput.value =
+      "";
+
+
+    updateSummary();
+
+    updateAnalytics();
+
   }
+);
 
 
-  if (newBudget === 0) {
-    alert("Please enter a budget greater than ₹0.");
-    return;
-  }
-
-
-  budget = newBudget;
-
-
-  saveBudget();
-
-  budgetInput.value = "";
-
-
-  updateSummary();
-
-  checkBudgetAlert();
-
-  alert(
-    `Monthly budget set to ₹${budget.toFixed(2)}`
-  );
-
-});
-
-
-// ===============================
-// Update Summary
-// ===============================
+// ==========================================
+// SUMMARY
+// ==========================================
 
 function updateSummary() {
 
-  const totalSpent = expenses.reduce(
-    function (total, expense) {
+  const totalSpent =
+    expenses.reduce(
+      function (total, expense) {
 
-      return total + Number(expense.amount);
+        return (
+          total +
+          Number(expense.amount)
+        );
 
-    },
-    0
-  );
+      },
+      0
+    );
 
 
-  const remaining = budget - totalSpent;
+  const remaining =
+    budget - totalSpent;
 
 
   budgetDisplay.textContent =
@@ -380,131 +446,563 @@ function updateSummary() {
     `₹${remaining.toFixed(2)}`;
 
 
-  checkBudgetAlert();
+  updateBudgetAlert(
+    totalSpent,
+    remaining
+  );
 
 }
 
 
-// ===============================
-// Budget Alert
-// ===============================
+// ==========================================
+// BUDGET ALERT
+// ==========================================
 
-function checkBudgetAlert() {
+function updateBudgetAlert(
+  totalSpent,
+  remaining
+) {
 
-  // Remove old alert
-  const oldAlert = document.getElementById("budgetAlert");
+  let alertBox =
+    document.getElementById(
+      "budgetAlert"
+    );
 
-  if (oldAlert) {
-    oldAlert.remove();
+
+  if (!alertBox) {
+
+    alertBox =
+      document.createElement("div");
+
+    alertBox.id =
+      "budgetAlert";
+
+    alertBox.style.margin =
+      "15px 0";
+
+    alertBox.style.padding =
+      "15px";
+
+    alertBox.style.borderRadius =
+      "12px";
+
+    alertBox.style.fontWeight =
+      "bold";
+
+    alertBox.style.textAlign =
+      "center";
+
+
+    const container =
+      document.querySelector(
+        ".container"
+      );
+
+
+    container.insertBefore(
+      alertBox,
+      container.firstChild
+    );
+
   }
 
 
   if (budget <= 0) {
+
+    alertBox.style.display =
+      "none";
+
     return;
+
   }
 
 
-  const totalSpent = expenses.reduce(
-    function (total, expense) {
+  alertBox.style.display =
+    "block";
 
-      return total + Number(expense.amount);
-
-    },
-    0
-  );
-
-
-  const remaining = budget - totalSpent;
 
   const percentage =
     (totalSpent / budget) * 100;
 
 
-  const alertBox =
-    document.createElement("div");
-
-
-  alertBox.id = "budgetAlert";
-
-
-  alertBox.style.margin = "15px 0";
-  alertBox.style.padding = "16px";
-  alertBox.style.borderRadius = "12px";
-  alertBox.style.fontWeight = "bold";
-  alertBox.style.textAlign = "center";
-
-
-  // Budget exceeded
   if (remaining < 0) {
 
     alertBox.textContent =
-      `🚨 Budget Exceeded! You are ₹${Math.abs(remaining).toFixed(2)} over your monthly budget.`;
+      `🚨 Budget exceeded by ₹${Math.abs(
+        remaining
+      ).toFixed(2)}.`;
 
-    alertBox.style.background = "#fee2e2";
-    alertBox.style.color = "#b91c1c";
+    alertBox.style.background =
+      "#fee2e2";
 
-  }
-
-  // Budget completely used
-  else if (remaining === 0) {
-
-    alertBox.textContent =
-      "🔴 Your monthly budget is fully used.";
-
-    alertBox.style.background = "#fee2e2";
-    alertBox.style.color = "#b91c1c";
+    alertBox.style.color =
+      "#b91c1c";
 
   }
 
-  // 90% or more
   else if (percentage >= 90) {
 
     alertBox.textContent =
-      `⚠️ Budget almost finished! Only ₹${remaining.toFixed(2)} remaining.`;
+      `🔴 Budget almost finished! ₹${remaining.toFixed(
+        2
+      )} remaining.`;
 
-    alertBox.style.background = "#ffedd5";
-    alertBox.style.color = "#c2410c";
+    alertBox.style.background =
+      "#ffedd5";
+
+    alertBox.style.color =
+      "#c2410c";
 
   }
 
-  // 70% or more
   else if (percentage >= 70) {
 
     alertBox.textContent =
-      `🟡 Budget Warning: You have used ${percentage.toFixed(0)}% of your budget.`;
+      `⚠️ Budget warning: ${percentage.toFixed(
+        0
+      )}% used.`;
 
-    alertBox.style.background = "#fef3c7";
-    alertBox.style.color = "#92400e";
+    alertBox.style.background =
+      "#fef3c7";
+
+    alertBox.style.color =
+      "#92400e";
 
   }
 
-  // Less than 70%
   else {
 
     alertBox.textContent =
-      `🟢 Budget Healthy: ₹${remaining.toFixed(2)} remaining.`;
+      `🟢 Budget healthy: ₹${remaining.toFixed(
+        2
+      )} remaining.`;
 
-    alertBox.style.background = "#dcfce7";
-    alertBox.style.color = "#166534";
+    alertBox.style.background =
+      "#dcfce7";
+
+    alertBox.style.color =
+      "#166534";
 
   }
-
-
-  const container =
-    document.querySelector(".container");
-
-
-  container.insertBefore(
-    alertBox,
-    container.firstChild
-  );
 
 }
 
 
-// ===============================
-// Format Date
-// ===============================
+// ==========================================
+// ANALYTICS DASHBOARD
+// ==========================================
+
+function updateAnalytics() {
+
+  let analytics =
+    document.getElementById(
+      "analyticsDashboard"
+    );
+
+
+  if (!analytics) {
+
+    analytics =
+      document.createElement("section");
+
+    analytics.id =
+      "analyticsDashboard";
+
+    analytics.style.background =
+      "white";
+
+    analytics.style.padding =
+      "20px";
+
+    analytics.style.borderRadius =
+      "16px";
+
+    analytics.style.marginBottom =
+      "18px";
+
+    analytics.style.boxShadow =
+      "0 4px 15px rgba(0,0,0,0.07)";
+
+
+    const container =
+      document.querySelector(
+        ".container"
+      );
+
+
+    container.insertBefore(
+      analytics,
+      document.querySelector(
+        ".form-card"
+      )
+    );
+
+  }
+
+
+  if (expenses.length === 0) {
+
+    analytics.innerHTML = `
+      <h2>📊 Spending Analytics</h2>
+      <p style="color:#6b7280;margin-top:10px;">
+        Add expenses to see your spending analytics.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  const today =
+    new Date();
+
+
+  const todayString =
+    today.toISOString()
+      .split("T")[0];
+
+
+  const currentYear =
+    today.getFullYear();
+
+
+  const currentMonth =
+    today.getMonth();
+
+
+  // TODAY
+  const todaySpent =
+    expenses
+      .filter(function (expense) {
+
+        return expense.date === todayString;
+
+      })
+      .reduce(function (total, expense) {
+
+        return (
+          total +
+          Number(expense.amount)
+        );
+
+      }, 0);
+
+
+  // MONTH
+  const monthExpenses =
+    expenses.filter(function (expense) {
+
+      const date =
+        new Date(expense.date);
+
+      return (
+        date.getFullYear() === currentYear &&
+        date.getMonth() === currentMonth
+      );
+
+    });
+
+
+  const monthSpent =
+    monthExpenses.reduce(
+      function (total, expense) {
+
+        return (
+          total +
+          Number(expense.amount)
+        );
+
+      },
+      0
+    );
+
+
+  // HIGHEST EXPENSE
+  const highestExpense =
+    expenses.reduce(
+      function (highest, expense) {
+
+        return Number(expense.amount) >
+          Number(highest.amount)
+          ? expense
+          : highest;
+
+      },
+      expenses[0]
+    );
+
+
+  // CATEGORY ANALYSIS
+  const categoryTotals = {};
+
+
+  expenses.forEach(
+    function (expense) {
+
+      if (
+        !categoryTotals[
+          expense.category
+        ]
+      ) {
+
+        categoryTotals[
+          expense.category
+        ] = 0;
+
+      }
+
+
+      categoryTotals[
+        expense.category
+      ] += Number(
+        expense.amount
+      );
+
+    }
+  );
+
+
+  let topCategory =
+    "None";
+
+
+  let topCategoryAmount =
+    0;
+
+
+  Object.keys(
+    categoryTotals
+  ).forEach(
+    function (category) {
+
+      if (
+        categoryTotals[category] >
+        topCategoryAmount
+      ) {
+
+        topCategory =
+          category;
+
+        topCategoryAmount =
+          categoryTotals[category];
+
+      }
+
+    }
+  );
+
+
+  // AVERAGE DAILY SPENDING
+  const firstExpenseDate =
+    new Date(
+      expenses[0].date
+    );
+
+
+  const daysPassed =
+    Math.max(
+      1,
+      Math.ceil(
+        (
+          today -
+          firstExpenseDate
+        ) /
+        (1000 * 60 * 60 * 24)
+      ) + 1
+    );
+
+
+  const totalSpent =
+    expenses.reduce(
+      function (total, expense) {
+
+        return (
+          total +
+          Number(expense.amount)
+        );
+
+      },
+      0
+    );
+
+
+  const averageDaily =
+    totalSpent /
+    daysPassed;
+
+
+  analytics.innerHTML = `
+
+    <h2>
+      📊 Spending Analytics
+    </h2>
+
+
+    <div
+      style="
+        display:grid;
+        grid-template-columns:
+        repeat(auto-fit,minmax(140px,1fr));
+        gap:12px;
+        margin-top:15px;
+      "
+    >
+
+      <div
+        style="
+          background:#f3f4f6;
+          padding:14px;
+          border-radius:12px;
+        "
+      >
+
+        <small>
+          Today's Spending
+        </small>
+
+        <h3>
+          ₹${todaySpent.toFixed(2)}
+        </h3>
+
+      </div>
+
+
+      <div
+        style="
+          background:#f3f4f6;
+          padding:14px;
+          border-radius:12px;
+        "
+      >
+
+        <small>
+          This Month
+        </small>
+
+        <h3>
+          ₹${monthSpent.toFixed(2)}
+        </h3>
+
+      </div>
+
+
+      <div
+        style="
+          background:#f3f4f6;
+          padding:14px;
+          border-radius:12px;
+        "
+      >
+
+        <small>
+          Average / Day
+        </small>
+
+        <h3>
+          ₹${averageDaily.toFixed(2)}
+        </h3>
+
+      </div>
+
+
+      <div
+        style="
+          background:#f3f4f6;
+          padding:14px;
+          border-radius:12px;
+        "
+      >
+
+        <small>
+          Highest Expense
+        </small>
+
+        <h3>
+          ₹${Number(
+            highestExpense.amount
+          ).toFixed(2)}
+        </h3>
+
+        <small>
+          ${escapeHTML(
+            highestExpense.name
+          )}
+        </small>
+
+      </div>
+
+
+      <div
+        style="
+          background:#f3f4f6;
+          padding:14px;
+          border-radius:12px;
+        "
+      >
+
+        <small>
+          Top Category
+        </small>
+
+        <h3>
+          ${escapeHTML(
+            topCategory
+          )}
+        </h3>
+
+        <small>
+          ₹${topCategoryAmount.toFixed(2)}
+        </small>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+// ==========================================
+// TODAY'S DATE
+// ==========================================
+
+function setTodayDate() {
+
+  if (!expenseDate) {
+    return;
+  }
+
+
+  const today =
+    new Date();
+
+
+  const year =
+    today.getFullYear();
+
+
+  const month =
+    String(
+      today.getMonth() + 1
+    ).padStart(2, "0");
+
+
+  const day =
+    String(
+      today.getDate()
+    ).padStart(2, "0");
+
+
+  expenseDate.value =
+    `${year}-${month}-${day}`;
+
+}
+
+
+// ==========================================
+// FORMAT DATE
+// ==========================================
 
 function formatDate(dateString) {
 
@@ -513,7 +1011,8 @@ function formatDate(dateString) {
   }
 
 
-  const parts = dateString.split("-");
+  const parts =
+    dateString.split("-");
 
 
   if (parts.length !== 3) {
@@ -526,27 +1025,31 @@ function formatDate(dateString) {
 }
 
 
-// ===============================
-// Security Helper
-// ===============================
+// ==========================================
+// SECURITY
+// ==========================================
 
 function escapeHTML(text) {
 
-  const div = document.createElement("div");
+  const div =
+    document.createElement("div");
 
-  div.textContent = text;
+  div.textContent =
+    text;
 
   return div.innerHTML;
 
 }
 
 
-// ===============================
-// Start App
-// ===============================
+// ==========================================
+// START APPLICATION
+// ==========================================
+
+setTodayDate();
 
 displayExpenses();
 
 updateSummary();
 
-checkBudgetAlert();
+updateAnalytics();
