@@ -238,3 +238,4 @@ function updateSummary() {
 displayExpenses();
 updateSummary();
 
+      
