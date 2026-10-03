@@ -17,8 +17,10 @@ const remainingDisplay = document.getElementById("remaining");
 const expenseList = document.getElementById("expenseList");
 const expenseCount = document.getElementById("expenseCount");
 
+let editingId = null;
 
-// Add Expense
+
+// Add or Update Expense
 expenseForm.addEventListener("submit", function (event) {
   event.preventDefault();
 
@@ -32,6 +34,37 @@ expenseForm.addEventListener("submit", function (event) {
     return;
   }
 
+  // Update existing expense
+  if (editingId !== null) {
+    expenses = expenses.map(function (expense) {
+      if (expense.id === editingId) {
+        return {
+          id: expense.id,
+          name: name,
+          amount: amount,
+          category: category,
+          date: date
+        };
+      }
+
+      return expense;
+    });
+
+    editingId = null;
+
+    saveExpenses();
+    expenseForm.reset();
+
+    const button = expenseForm.querySelector("button[type='submit']");
+    button.textContent = "+ Add Expense";
+
+    displayExpenses();
+
+    alert("Expense updated successfully!");
+    return;
+  }
+
+  // Add new expense
   const expense = {
     id: Date.now(),
     name: name,
@@ -48,11 +81,11 @@ expenseForm.addEventListener("submit", function (event) {
 });
 
 
-// Set Budget
+// Set Monthly Budget
 setBudgetButton.addEventListener("click", function () {
   const newBudget = Number(budgetInput.value);
 
-  if (newBudget < 0 || budgetInput.value === "") {
+  if (budgetInput.value === "" || newBudget < 0) {
     alert("Please enter a valid budget.");
     return;
   }
@@ -82,6 +115,7 @@ function displayExpenses() {
       '<p class="empty">No expenses added yet.</p>';
 
     expenseCount.textContent = "0 expenses";
+
     updateSummary();
     return;
   }
@@ -101,9 +135,17 @@ function displayExpenses() {
         </div>
 
         <div class="expense-right">
+
           <div class="expense-amount">
             ₹${expense.amount.toFixed(2)}
           </div>
+
+          <button
+            class="edit-btn"
+            onclick="editExpense(${expense.id})"
+          >
+            Edit
+          </button>
 
           <button
             class="delete-btn"
@@ -111,6 +153,7 @@ function displayExpenses() {
           >
             Delete
           </button>
+
         </div>
       `;
 
@@ -118,9 +161,38 @@ function displayExpenses() {
     });
 
   expenseCount.textContent =
-    `${expenses.length} ${expenses.length === 1 ? "expense" : "expenses"}`;
+    `${expenses.length} ${
+      expenses.length === 1 ? "expense" : "expenses"
+    }`;
 
   updateSummary();
+}
+
+
+// Edit Expense
+function editExpense(id) {
+  const expense = expenses.find(function (item) {
+    return item.id === id;
+  });
+
+  if (!expense) {
+    return;
+  }
+
+  expenseName.value = expense.name;
+  expenseAmount.value = expense.amount;
+  expenseCategory.value = expense.category;
+  expenseDate.value = expense.date;
+
+  editingId = id;
+
+  const button = expenseForm.querySelector("button[type='submit']");
+  button.textContent = "Update Expense";
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 }
 
 
@@ -151,12 +223,17 @@ function updateSummary() {
 
   const remaining = budget - totalSpent;
 
-  budgetDisplay.textContent = `₹${budget.toFixed(2)}`;
-  totalDisplay.textContent = `₹${totalSpent.toFixed(2)}`;
-  remainingDisplay.textContent = `₹${remaining.toFixed(2)}`;
+  budgetDisplay.textContent =
+    `₹${budget.toFixed(2)}`;
+
+  totalDisplay.textContent =
+    `₹${totalSpent.toFixed(2)}`;
+
+  remainingDisplay.textContent =
+    `₹${remaining.toFixed(2)}`;
 }
 
 
-// Load saved data when page opens
+// Load saved data
 displayExpenses();
 updateSummary();
