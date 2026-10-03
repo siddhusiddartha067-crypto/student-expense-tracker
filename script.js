@@ -159,4 +159,5 @@ function updateSummary() {
 
 // Load saved data when page opens
 displayExpenses();
+
 updateSummary();
