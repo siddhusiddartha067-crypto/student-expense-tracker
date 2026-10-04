@@ -1,10 +1,11 @@
 // ==========================================
 // STUDENT EXPENSE TRACKER
-// AI + EXPENSE MANAGEMENT
+// COMPLETE SCRIPT.JS
 // ==========================================
 
+
 // ==========================================
-// CLOUDFLARE AI BACKEND
+// AI BACKEND
 // ==========================================
 
 const AI_BACKEND_URL =
@@ -12,7 +13,7 @@ const AI_BACKEND_URL =
 
 
 // ==========================================
-// ELEMENTS
+// HTML ELEMENTS
 // ==========================================
 
 const expenseForm =
@@ -53,24 +54,54 @@ const expenseCount =
 
 
 // ==========================================
-// LOCAL STORAGE
+// LOAD EXPENSE DATA
 // ==========================================
 
-let expenses =
-  JSON.parse(
-    localStorage.getItem("expenses")
-  ) || [];
+let expenses = [];
+
+try {
+  const savedExpenses =
+    localStorage.getItem("expenses");
+
+  expenses =
+    savedExpenses
+      ? JSON.parse(savedExpenses)
+      : [];
+
+  if (!Array.isArray(expenses)) {
+    expenses = [];
+  }
+
+} catch (error) {
+
+  console.error(
+    "Could not load expenses:",
+    error
+  );
+
+  expenses = [];
+}
+
+
+// ==========================================
+// LOAD BUDGET
+// ==========================================
 
 let budget =
   Number(
     localStorage.getItem("budget")
   ) || 0;
 
+
+// ==========================================
+// EDITING STATE
+// ==========================================
+
 let editingId = null;
 
 
 // ==========================================
-// SAVE DATA
+// SAVE EXPENSES
 // ==========================================
 
 function saveExpenses() {
@@ -83,11 +114,15 @@ function saveExpenses() {
 }
 
 
+// ==========================================
+// SAVE BUDGET
+// ==========================================
+
 function saveBudget() {
 
   localStorage.setItem(
     "budget",
-    budget
+    String(budget)
   );
 
 }
@@ -103,14 +138,20 @@ expenseForm.addEventListener(
 
     event.preventDefault();
 
+
     const name =
       expenseName.value.trim();
 
+
     const amount =
-      Number(expenseAmount.value);
+      Number(
+        expenseAmount.value
+      );
+
 
     const category =
       expenseCategory.value;
+
 
     const date =
       expenseDate.value;
@@ -133,7 +174,10 @@ expenseForm.addEventListener(
     }
 
 
+    // ======================================
     // UPDATE EXISTING EXPENSE
+    // ======================================
+
     if (editingId !== null) {
 
       expenses =
@@ -141,7 +185,8 @@ expenseForm.addEventListener(
           function (expense) {
 
             if (
-              expense.id === editingId
+              String(expense.id) ===
+              String(editingId)
             ) {
 
               return {
@@ -160,6 +205,7 @@ expenseForm.addEventListener(
 
             }
 
+
             return expense;
 
           }
@@ -169,21 +215,29 @@ expenseForm.addEventListener(
       editingId = null;
 
 
-      const button =
+      const submitButton =
         expenseForm.querySelector(
           "button[type='submit']"
         );
 
-      button.textContent =
-        "+ Add Expense";
+
+      if (submitButton) {
+
+        submitButton.textContent =
+          "+ Add Expense";
+
+      }
 
     }
 
 
+    // ======================================
     // ADD NEW EXPENSE
+    // ======================================
+
     else {
 
-      const newExpense = {
+      expenses.push({
 
         id: Date.now(),
 
@@ -195,12 +249,7 @@ expenseForm.addEventListener(
 
         date: date
 
-      };
-
-
-      expenses.push(
-        newExpense
-      );
+      });
 
     }
 
@@ -230,13 +279,17 @@ function displayExpenses() {
   expenseList.innerHTML = "";
 
 
-  if (expenses.length === 0) {
+  if (
+    expenses.length === 0
+  ) {
 
     expenseList.innerHTML =
       '<p class="empty">No expenses added yet.</p>';
 
+
     expenseCount.textContent =
       "0 expenses";
+
 
     return;
 
@@ -250,7 +303,10 @@ function displayExpenses() {
       function (expense) {
 
         const item =
-          document.createElement("div");
+          document.createElement(
+            "div"
+          );
+
 
         item.className =
           "expense-item";
@@ -287,21 +343,25 @@ function displayExpenses() {
               ).toFixed(2)}
             </div>
 
+            <div>
 
-            <button
-              class="edit-btn"
-              onclick="editExpense(${expense.id})"
-            >
-              ✏️ Edit
-            </button>
+              <button
+                class="edit-btn"
+                type="button"
+                onclick="editExpense(${expense.id})"
+              >
+                ✏️ Edit
+              </button>
 
+              <button
+                class="delete-btn"
+                type="button"
+                onclick="deleteExpense(${expense.id})"
+              >
+                🗑️ Delete
+              </button>
 
-            <button
-              class="delete-btn"
-              onclick="deleteExpense(${expense.id})"
-            >
-              🗑️ Delete
-            </button>
+            </div>
 
           </div>
 
@@ -336,7 +396,10 @@ function editExpense(id) {
     expenses.find(
       function (item) {
 
-        return item.id === id;
+        return (
+          String(item.id) ===
+          String(id)
+        );
 
       }
     );
@@ -356,27 +419,35 @@ function editExpense(id) {
   expenseName.value =
     expense.name;
 
+
   expenseAmount.value =
     expense.amount;
 
+
   expenseCategory.value =
     expense.category;
+
 
   expenseDate.value =
     expense.date;
 
 
-  editingId = id;
+  editingId =
+    id;
 
 
-  const button =
+  const submitButton =
     expenseForm.querySelector(
       "button[type='submit']"
     );
 
 
-  button.textContent =
-    "Update Expense";
+  if (submitButton) {
+
+    submitButton.textContent =
+      "Update Expense";
+
+  }
 
 
   expenseForm.scrollIntoView({
@@ -413,7 +484,10 @@ function deleteExpense(id) {
     expenses.filter(
       function (expense) {
 
-        return expense.id !== id;
+        return (
+          String(expense.id) !==
+          String(id)
+        );
 
       }
     );
@@ -431,7 +505,7 @@ function deleteExpense(id) {
 
 
 // ==========================================
-// SET BUDGET
+// SET MONTHLY BUDGET
 // ==========================================
 
 setBudgetButton.addEventListener(
@@ -464,7 +538,10 @@ setBudgetButton.addEventListener(
 
     saveBudget();
 
-    budgetInput.value = "";
+
+    budgetInput.value =
+      "";
+
 
     updateSummary();
 
@@ -475,7 +552,7 @@ setBudgetButton.addEventListener(
 
 
 // ==========================================
-// SUMMARY
+// UPDATE SUMMARY
 // ==========================================
 
 function updateSummary() {
@@ -545,20 +622,26 @@ function updateBudgetAlert(
         "div"
       );
 
+
     alertBox.id =
       "budgetAlert";
+
 
     alertBox.style.margin =
       "15px 0";
 
+
     alertBox.style.padding =
       "15px";
+
 
     alertBox.style.borderRadius =
       "12px";
 
+
     alertBox.style.fontWeight =
       "bold";
+
 
     alertBox.style.textAlign =
       "center";
@@ -570,10 +653,14 @@ function updateBudgetAlert(
       );
 
 
-    container.insertBefore(
-      alertBox,
-      container.firstChild
-    );
+    if (container) {
+
+      container.insertBefore(
+        alertBox,
+        container.firstChild
+      );
+
+    }
 
   }
 
@@ -593,7 +680,10 @@ function updateBudgetAlert(
 
 
   const percentage =
-    (totalSpent / budget) * 100;
+    (
+      totalSpent /
+      budget
+    ) * 100;
 
 
   if (remaining < 0) {
@@ -603,8 +693,10 @@ function updateBudgetAlert(
         remaining
       ).toFixed(2)}.`;
 
+
     alertBox.style.background =
       "#fee2e2";
+
 
     alertBox.style.color =
       "#b91c1c";
@@ -620,8 +712,10 @@ function updateBudgetAlert(
         2
       )} remaining.`;
 
+
     alertBox.style.background =
       "#ffedd5";
+
 
     alertBox.style.color =
       "#c2410c";
@@ -637,13 +731,16 @@ function updateBudgetAlert(
         0
       )}% used.`;
 
+
     alertBox.style.background =
       "#fef3c7";
+
 
     alertBox.style.color =
       "#92400e";
 
   }
+
   else {
 
     alertBox.textContent =
@@ -651,8 +748,10 @@ function updateBudgetAlert(
         2
       )} remaining.`;
 
+
     alertBox.style.background =
       "#dcfce7";
+
 
     alertBox.style.color =
       "#166534";
@@ -663,7 +762,7 @@ function updateBudgetAlert(
 
 
 // ==========================================
-// ANALYTICS
+// SPENDING ANALYTICS
 // ==========================================
 
 function updateAnalytics() {
@@ -681,20 +780,26 @@ function updateAnalytics() {
         "section"
       );
 
+
     analytics.id =
       "analyticsDashboard";
+
 
     analytics.style.background =
       "white";
 
+
     analytics.style.padding =
       "20px";
+
 
     analytics.style.borderRadius =
       "16px";
 
+
     analytics.style.marginBottom =
       "18px";
+
 
     analytics.style.boxShadow =
       "0 4px 15px rgba(0,0,0,0.07)";
@@ -706,17 +811,27 @@ function updateAnalytics() {
       );
 
 
-    container.insertBefore(
-      analytics,
+    const formCard =
       document.querySelector(
         ".form-card"
-      )
-    );
+      );
+
+
+    if (container) {
+
+      container.insertBefore(
+        analytics,
+        formCard
+      );
+
+    }
 
   }
 
 
-  if (expenses.length === 0) {
+  if (
+    expenses.length === 0
+  ) {
 
     analytics.innerHTML = `
 
@@ -758,6 +873,10 @@ function updateAnalytics() {
     today.getMonth();
 
 
+  // ======================================
+  // TODAY'S SPENDING
+  // ======================================
+
   const todaySpent =
     expenses
       .filter(
@@ -787,6 +906,10 @@ function updateAnalytics() {
         0
       );
 
+
+  // ======================================
+  // CURRENT MONTH EXPENSES
+  // ======================================
 
   const monthExpenses =
     expenses.filter(
@@ -829,6 +952,10 @@ function updateAnalytics() {
     );
 
 
+  // ======================================
+  // HIGHEST EXPENSE
+  // ======================================
+
   const highestExpense =
     expenses.reduce(
       function (
@@ -852,34 +979,43 @@ function updateAnalytics() {
     );
 
 
+  // ======================================
+  // CATEGORY TOTALS
+  // ======================================
+
   const categoryTotals = {};
 
 
   expenses.forEach(
     function (expense) {
 
+      const category =
+        expense.category ||
+        "Other";
+
+
       if (
-        !categoryTotals[
-          expense.category
-        ]
+        !categoryTotals[category]
       ) {
 
-        categoryTotals[
-          expense.category
-        ] = 0;
+        categoryTotals[category] =
+          0;
 
       }
 
 
-      categoryTotals[
-        expense.category
-      ] += Number(
-        expense.amount
-      );
+      categoryTotals[category] +=
+        Number(
+          expense.amount
+        );
 
     }
   );
 
+
+  // ======================================
+  // TOP CATEGORY
+  // ======================================
 
   let topCategory =
     "None";
@@ -895,19 +1031,16 @@ function updateAnalytics() {
     function (category) {
 
       if (
-        categoryTotals[
-          category
-        ] >
+        categoryTotals[category] >
         topCategoryAmount
       ) {
 
         topCategory =
           category;
 
+
         topCategoryAmount =
-          categoryTotals[
-            category
-          ];
+          categoryTotals[category];
 
       }
 
@@ -915,9 +1048,57 @@ function updateAnalytics() {
   );
 
 
+  // ======================================
+  // TOTAL SPENT
+  // ======================================
+
+  const totalSpent =
+    expenses.reduce(
+      function (
+        total,
+        expense
+      ) {
+
+        return (
+          total +
+          Number(
+            expense.amount
+          )
+        );
+
+      },
+      0
+    );
+
+
+  // ======================================
+  // AVERAGE DAILY SPENDING
+  // ======================================
+
+  const sortedExpenses =
+    expenses
+      .slice()
+      .sort(
+        function (a, b) {
+
+          return (
+            new Date(
+              a.date +
+              "T00:00:00"
+            ) -
+            new Date(
+              b.date +
+              "T00:00:00"
+            )
+          );
+
+        }
+      );
+
+
   const firstExpenseDate =
     new Date(
-      expenses[0].date +
+      sortedExpenses[0].date +
       "T00:00:00"
     );
 
@@ -940,36 +1121,20 @@ function updateAnalytics() {
     );
 
 
-  const totalSpent =
-    expenses.reduce(
-      function (
-        total,
-        expense
-      ) {
-
-        return (
-          total +
-          Number(
-            expense.amount
-          )
-        );
-
-      },
-      0
-    );
-
-
   const averageDaily =
     totalSpent /
     daysPassed;
 
+
+  // ======================================
+  // ANALYTICS HTML
+  // ======================================
 
   analytics.innerHTML = `
 
     <h2>
       📊 Spending Analytics
     </h2>
-
 
     <div
       style="
@@ -981,11 +1146,13 @@ function updateAnalytics() {
       "
     >
 
-      <div style="
-        background:#f3f4f6;
-        padding:14px;
-        border-radius:12px;
-      ">
+      <div
+        style="
+          background:#f3f4f6;
+          padding:14px;
+          border-radius:12px;
+        "
+      >
 
         <small>
           Today's Spending
@@ -998,11 +1165,13 @@ function updateAnalytics() {
       </div>
 
 
-      <div style="
-        background:#f3f4f6;
-        padding:14px;
-        border-radius:12px;
-      ">
+      <div
+        style="
+          background:#f3f4f6;
+          padding:14px;
+          border-radius:12px;
+        "
+      >
 
         <small>
           This Month
@@ -1015,11 +1184,13 @@ function updateAnalytics() {
       </div>
 
 
-      <div style="
-        background:#f3f4f6;
-        padding:14px;
-        border-radius:12px;
-      ">
+      <div
+        style="
+          background:#f3f4f6;
+          padding:14px;
+          border-radius:12px;
+        "
+      >
 
         <small>
           Average / Day
@@ -1032,11 +1203,13 @@ function updateAnalytics() {
       </div>
 
 
-      <div style="
-        background:#f3f4f6;
-        padding:14px;
-        border-radius:12px;
-      ">
+      <div
+        style="
+          background:#f3f4f6;
+          padding:14px;
+          border-radius:12px;
+        "
+      >
 
         <small>
           Highest Expense
@@ -1057,11 +1230,13 @@ function updateAnalytics() {
       </div>
 
 
-      <div style="
-        background:#f3f4f6;
-        padding:14px;
-        border-radius:12px;
-      ">
+      <div
+        style="
+          background:#f3f4f6;
+          padding:14px;
+          border-radius:12px;
+        "
+      >
 
         <small>
           Top Category
@@ -1099,7 +1274,22 @@ function createAIDashboard() {
 
 
   if (aiSection) {
+
     return;
+
+  }
+
+
+  const container =
+    document.querySelector(
+      ".container"
+    );
+
+
+  if (!container) {
+
+    return;
+
   }
 
 
@@ -1116,14 +1306,18 @@ function createAIDashboard() {
   aiSection.style.background =
     "white";
 
+
   aiSection.style.padding =
     "20px";
+
 
   aiSection.style.borderRadius =
     "16px";
 
+
   aiSection.style.marginBottom =
     "18px";
+
 
   aiSection.style.boxShadow =
     "0 4px 15px rgba(0,0,0,0.07)";
@@ -1134,7 +1328,6 @@ function createAIDashboard() {
     <h2>
       🤖 AI Financial Assistant
     </h2>
-
 
     <p
       style="
@@ -1184,6 +1377,7 @@ function createAIDashboard() {
           style="flex:1;"
         >
 
+
         <button
           id="askAIButton"
           type="button"
@@ -1212,224 +1406,13 @@ function createAIDashboard() {
   `;
 
 
-  const container =
-    document.querySelector(
-      ".container"
-    );
-
-
-  container.insertBefore(
-    aiSection,
+  const formCard =
     document.querySelector(
       ".form-card"
-    )
-  );
-
-
-  document
-    .getElementById(
-      "analyzeAIButton"
-    )
-    .addEventListener(
-      "click",
-      function () {
-
-        runAI(
-          "analyze"
-        );
-
-      }
     );
 
 
-  document
-    .getElementById(
-      "savingAIButton"
-    )
-    .addEventListener(
-      "click",
-      function () {
+  if (formCard) {
 
-        runAI(
-          "saving"
-        );
-
-      }
-    );
-
-
-  document
-    .getElementById(
-      "askAIButton"
-    )
-    .addEventListener(
-      "click",
-      function () {
-
-        const question =
-          document
-            .getElementById(
-              "aiQuestion"
-            )
-            .value
-            .trim();
-
-
-        if (!question) {
-
-          alert(
-            "Please enter a question for AI."
-          );
-
-          return;
-
-        }
-
-
-        runAI(
-          "ask",
-          question
-        );
-
-      }
-    );
-
-}
-
-
-// ==========================================
-// CALL CLOUDFLARE AI
-// ==========================================
-
-async function runAI(
-  action,
-  question = ""
-) {
-
-  const result =
-    document.getElementById(
-      "aiResult"
-    );
-
-
-  const analyzeButton =
-    document.getElementById(
-      "analyzeAIButton"
-    );
-
-
-  const savingButton =
-    document.getElementById(
-      "savingAIButton"
-    );
-
-
-  const askButton =
-    document.getElementById(
-      "askAIButton"
-    );
-
-
-  result.style.display =
-    "block";
-
-
-  result.textContent =
-    "🤖 AI is analyzing your expenses...";
-
-
-  analyzeButton.disabled =
-    true;
-
-  savingButton.disabled =
-    true;
-
-  askButton.disabled =
-    true;
-
-
-  try {
-
-    const response =
-      await fetch(
-        AI_BACKEND_URL,
-        {
-
-          method: "POST",
-
-          headers: {
-
-            "Content-Type":
-              "application/json"
-
-          },
-
-          body:
-            JSON.stringify({
-
-              action:
-                action,
-
-              question:
-                question,
-
-              expenses:
-                expenses,
-
-              budget:
-                budget
-
-            })
-
-        }
-      );
-
-
-    const data =
-      await response.json();
-
-
-    if (
-      !response.ok ||
-      !data.success
-    ) {
-
-      throw new Error(
-        data.message ||
-        "AI request failed."
-      );
-
-    }
-
-
-    result.textContent =
-      data.answer ||
-      "AI did not return an answer.";
-
-
-  }
-
-  catch (error) {
-
-    console.error(
-      "AI Error:",
-      error
-    );
-
-
-    result.textContent =
-      "❌ AI connection failed.\n\n" +
-      "Please check your internet connection and try again.";
-
-  }
-
-  finally {
-
-    analyzeButton.disabled =
-      false;
-
-    savingButton.disabled =
-      false;
-
-    askButton.disabled =
+    container.insertBefore(
   
