@@ -1414,5 +1414,473 @@ function createAIDashboard() {
 
   if (formCard) {
 
-    container.insertBefore(
+    container.insertBefore(      aiSection,
+      formCard
+    );
+
+  } else {
+
+    container.appendChild(
+      aiSection
+    );
+
+  }
+
+
+  // ======================================
+  // AI BUTTONS
+  // ======================================
+
+  const analyzeButton =
+    document.getElementById(
+      "analyzeAIButton"
+    );
+
+
+  const savingButton =
+    document.getElementById(
+      "savingAIButton"
+    );
+
+
+  const askButton =
+    document.getElementById(
+      "askAIButton"
+    );
+
+
+  if (analyzeButton) {
+
+    analyzeButton.addEventListener(
+      "click",
+      function () {
+
+        runAI(
+          "analyze"
+        );
+
+      }
+    );
+
+  }
+
+
+  if (savingButton) {
+
+    savingButton.addEventListener(
+      "click",
+      function () {
+
+        runAI(
+          "saving"
+        );
+
+      }
+    );
+
+  }
+
+
+  if (askButton) {
+
+    askButton.addEventListener(
+      "click",
+      function () {
+
+        const questionInput =
+          document.getElementById(
+            "aiQuestion"
+          );
+
+
+        const question =
+          questionInput
+            ? questionInput.value.trim()
+            : "";
+
+
+        if (!question) {
+
+          alert(
+            "Please enter a question for AI."
+          );
+
+          return;
+
+        }
+
+
+        runAI(
+          "ask",
+          question
+        );
+
+      }
+    );
+
+  }
+
+}
+
+
+// ==========================================
+// RUN AI REQUEST
+// ==========================================
+
+async function runAI(
+  action,
+  question = ""
+) {
+
+  const result =
+    document.getElementById(
+      "aiResult"
+    );
+
+
+  const analyzeButton =
+    document.getElementById(
+      "analyzeAIButton"
+    );
+
+
+  const savingButton =
+    document.getElementById(
+      "savingAIButton"
+    );
+
+
+  const askButton =
+    document.getElementById(
+      "askAIButton"
+    );
+
+
+  if (!result) {
+
+    return;
+
+  }
+
+
+  result.style.display =
+    "block";
+
+
+  result.textContent =
+    "🤖 AI is analyzing your expenses...";
+
+
+  if (analyzeButton) {
+
+    analyzeButton.disabled =
+      true;
+
+  }
+
+
+  if (savingButton) {
+
+    savingButton.disabled =
+      true;
+
+  }
+
+
+  if (askButton) {
+
+    askButton.disabled =
+      true;
+
+  }
+
+
+  try {
+
+    const response =
+      await fetch(
+        AI_BACKEND_URL,
+        {
+
+          method: "POST",
+
+          headers: {
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body:
+            JSON.stringify({
+
+              action:
+                action,
+
+              question:
+                question,
+
+              expenses:
+                expenses,
+
+              budget:
+                budget
+
+            })
+
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.message ||
+        "AI server returned an error."
+      );
+
+    }
+
+
+    if (!data.success) {
+
+      throw new Error(
+        data.message ||
+        "AI request failed."
+      );
+
+    }
+
+
+    result.textContent =
+      data.answer ||
+      "AI did not return an answer.";
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "AI Error:",
+      error
+    );
+
+
+    result.textContent =
+      "❌ AI connection failed.\n\n" +
+      (
+        error.message ||
+        "Please check your internet connection and Cloudflare Worker."
+      );
+
+  }
+
+  finally {
+
+    if (analyzeButton) {
+
+      analyzeButton.disabled =
+        false;
+
+    }
+
+
+    if (savingButton) {
+
+      savingButton.disabled =
+        false;
+
+    }
+
+
+    if (askButton) {
+
+      askButton.disabled =
+        false;
+
+    }
+
+  }
+
+}
+
+
+// ==========================================
+// VOICE FUNCTION
+// ==========================================
+
+function speak(message) {
+
+  if (
+    "speechSynthesis" in window
+  ) {
+
+    const speech =
+      new SpeechSynthesisUtterance(
+        message
+      );
+
+
+    speech.lang =
+      "en-IN";
+
+
+    speech.rate =
+      0.9;
+
+
+    window.speechSynthesis.cancel();
+
+
+    window.speechSynthesis.speak(
+      speech
+    );
+
+  }
+
+}
+
+
+// ==========================================
+// TODAY'S DATE
+// ==========================================
+
+function setTodayDate() {
+
+  if (!expenseDate) {
+
+    return;
+
+  }
+
+
+  expenseDate.value =
+    getLocalDateString(
+      new Date()
+    );
+
+}
+
+
+// ==========================================
+// LOCAL DATE STRING
+// ==========================================
+
+function getLocalDateString(
+  date
+) {
+
+  const year =
+    date.getFullYear();
+
+
+  const month =
+    String(
+      date.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
+
+
+  const day =
+    String(
+      date.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
+
+
+  return (
+    `${year}-${month}-${day}`
+  );
+
+}
+
+
+// ==========================================
+// FORMAT DATE
+// ==========================================
+
+function formatDate(
+  dateString
+) {
+
+  if (!dateString) {
+
+    return "";
+
+  }
+
+
+  const parts =
+    dateString.split("-");
+
+
+  if (
+    parts.length !== 3
+  ) {
+
+    return dateString;
+
+  }
+
+
+  return (
+    `${parts[2]}-${parts[1]}-${parts[0]}`
+  );
+
+}
+
+
+// ==========================================
+// ESCAPE HTML
+// ==========================================
+
+function escapeHTML(
+  text
+) {
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+
+  div.textContent =
+    String(text);
+
+
+  return div.innerHTML;
+
+}
+
+
+// ==========================================
+// START APPLICATION
+// ==========================================
+
+setTodayDate();
+
+displayExpenses();
+
+updateSummary();
+
+updateAnalytics();
+
+createAIDashboard();
+
+
+// ==========================================
+// APPLICATION READY
+// ==========================================
+
+console.log(
+  "Student Expense Tracker loaded successfully 🚀"
+);
   
