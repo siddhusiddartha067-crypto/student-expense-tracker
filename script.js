@@ -644,7 +644,6 @@ function updateBudgetAlert(
       "#92400e";
 
   }
-
   else {
 
     alertBox.textContent =
