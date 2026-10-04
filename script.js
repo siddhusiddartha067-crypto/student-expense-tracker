@@ -1433,4 +1433,114 @@ async function runAI(
       false;
 
     askButton.disabled =
+  false;
+      }
+
+}
+
+
+// ==========================================
+// DATE HELPERS
+// ==========================================
+
+function setTodayDate() {
+
+  if (!expenseDate) {
+    return;
+  }
+
+  expenseDate.value =
+    getLocalDateString(
+      new Date()
+    );
+
+}
+
+
+function getLocalDateString(
+  date
+) {
+
+  const year =
+    date.getFullYear();
+
+  const month =
+    String(
+      date.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
+
+  const day =
+    String(
+      date.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
+
+  return `${year}-${month}-${day}`;
+
+}
+
+
+function formatDate(
+  dateString
+) {
+
+  if (!dateString) {
+    return "";
+  }
+
+  const parts =
+    dateString.split("-");
+
+  if (
+    parts.length !== 3
+  ) {
+
+    return dateString;
+
+  }
+
+  return `${parts[2]}-${parts[1]}-${parts[0]}`;
+
+}
+
+
+// ==========================================
+// SECURITY
+// ==========================================
+
+function escapeHTML(
+  text
+) {
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.textContent =
+    text;
+
+  return div.innerHTML;
+
+}
+
+
+// ==========================================
+// START APP
+// ==========================================
+
+setTodayDate();
+
+displayExpenses();
+
+updateSummary();
+
+updateAnalytics();
+
+createAIDashboard();
   
