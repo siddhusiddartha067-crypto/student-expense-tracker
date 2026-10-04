@@ -1,33 +1,70 @@
 // ==========================================
-// STUDENT EXPENSE TRACKER - FINAL SCRIPT
+// STUDENT EXPENSE TRACKER
+// AI + EXPENSE MANAGEMENT
 // ==========================================
 
-const expenseForm = document.getElementById("expenseForm");
-const expenseName = document.getElementById("expenseName");
-const expenseAmount = document.getElementById("expenseAmount");
-const expenseCategory = document.getElementById("expenseCategory");
-const expenseDate = document.getElementById("expenseDate");
+// ==========================================
+// CLOUDFLARE AI BACKEND
+// ==========================================
 
-const budgetInput = document.getElementById("budgetInput");
-const setBudgetButton = document.getElementById("setBudget");
-
-const budgetDisplay = document.getElementById("budget");
-const totalDisplay = document.getElementById("total");
-const remainingDisplay = document.getElementById("remaining");
-
-const expenseList = document.getElementById("expenseList");
-const expenseCount = document.getElementById("expenseCount");
+const AI_BACKEND_URL =
+  "https://student-expense-ai-siddhu2026.siddhusiddartha067.workers.dev";
 
 
 // ==========================================
-// LOAD SAVED DATA
+// ELEMENTS
+// ==========================================
+
+const expenseForm =
+  document.getElementById("expenseForm");
+
+const expenseName =
+  document.getElementById("expenseName");
+
+const expenseAmount =
+  document.getElementById("expenseAmount");
+
+const expenseCategory =
+  document.getElementById("expenseCategory");
+
+const expenseDate =
+  document.getElementById("expenseDate");
+
+const budgetInput =
+  document.getElementById("budgetInput");
+
+const setBudgetButton =
+  document.getElementById("setBudget");
+
+const budgetDisplay =
+  document.getElementById("budget");
+
+const totalDisplay =
+  document.getElementById("total");
+
+const remainingDisplay =
+  document.getElementById("remaining");
+
+const expenseList =
+  document.getElementById("expenseList");
+
+const expenseCount =
+  document.getElementById("expenseCount");
+
+
+// ==========================================
+// LOCAL STORAGE
 // ==========================================
 
 let expenses =
-  JSON.parse(localStorage.getItem("expenses")) || [];
+  JSON.parse(
+    localStorage.getItem("expenses")
+  ) || [];
 
 let budget =
-  Number(localStorage.getItem("budget")) || 0;
+  Number(
+    localStorage.getItem("budget")
+  ) || 0;
 
 let editingId = null;
 
@@ -100,29 +137,33 @@ expenseForm.addEventListener(
     if (editingId !== null) {
 
       expenses =
-        expenses.map(function (expense) {
+        expenses.map(
+          function (expense) {
 
-          if (expense.id === editingId) {
+            if (
+              expense.id === editingId
+            ) {
 
-            return {
+              return {
 
-              id: expense.id,
+                id: expense.id,
 
-              name: name,
+                name: name,
 
-              amount: amount,
+                amount: amount,
 
-              category: category,
+                category: category,
 
-              date: date
+                date: date
 
-            };
+              };
+
+            }
+
+            return expense;
 
           }
-
-          return expense;
-
-        });
+        );
 
 
       editingId = null;
@@ -132,7 +173,6 @@ expenseForm.addEventListener(
         expenseForm.querySelector(
           "button[type='submit']"
         );
-
 
       button.textContent =
         "+ Add Expense";
@@ -198,10 +238,6 @@ function displayExpenses() {
     expenseCount.textContent =
       "0 expenses";
 
-    updateSummary();
-
-    updateAnalytics();
-
     return;
 
   }
@@ -210,63 +246,74 @@ function displayExpenses() {
   expenses
     .slice()
     .reverse()
-    .forEach(function (expense) {
+    .forEach(
+      function (expense) {
 
-      const item =
-        document.createElement("div");
+        const item =
+          document.createElement("div");
 
-
-      item.className =
-        "expense-item";
-
-
-      item.innerHTML = `
-
-        <div class="expense-info">
-
-          <h3>
-            ${escapeHTML(expense.name)}
-          </h3>
-
-          <p>
-            ${escapeHTML(expense.category)}
-            •
-            ${formatDate(expense.date)}
-          </p>
-
-        </div>
+        item.className =
+          "expense-item";
 
 
-        <div class="expense-right">
+        item.innerHTML = `
 
-          <div class="expense-amount">
-            ₹${Number(expense.amount).toFixed(2)}
+          <div class="expense-info">
+
+            <h3>
+              ${escapeHTML(
+                expense.name
+              )}
+            </h3>
+
+            <p>
+              ${escapeHTML(
+                expense.category
+              )}
+              •
+              ${formatDate(
+                expense.date
+              )}
+            </p>
+
           </div>
 
 
-          <button
-            class="edit-btn"
-            onclick="editExpense(${expense.id})"
-          >
-            ✏️ Edit
-          </button>
+          <div class="expense-right">
+
+            <div class="expense-amount">
+              ₹${Number(
+                expense.amount
+              ).toFixed(2)}
+            </div>
 
 
-          <button
-            class="delete-btn"
-            onclick="deleteExpense(${expense.id})"
-          >
-            🗑️ Delete
-          </button>
-
-        </div>
-
-      `;
+            <button
+              class="edit-btn"
+              onclick="editExpense(${expense.id})"
+            >
+              ✏️ Edit
+            </button>
 
 
-      expenseList.appendChild(item);
+            <button
+              class="delete-btn"
+              onclick="deleteExpense(${expense.id})"
+            >
+              🗑️ Delete
+            </button>
 
-    });
+          </div>
+
+        `;
+
+
+        expenseList.appendChild(
+          item
+        );
+
+      }
+    );
 
 
   expenseCount.textContent =
@@ -275,11 +322,6 @@ function displayExpenses() {
         ? "expense"
         : "expenses"
     }`;
-
-
-  updateSummary();
-
-  updateAnalytics();
 
 }
 
@@ -291,11 +333,13 @@ function displayExpenses() {
 function editExpense(id) {
 
   const expense =
-    expenses.find(function (item) {
+    expenses.find(
+      function (item) {
 
-      return item.id === id;
+        return item.id === id;
 
-    });
+      }
+    );
 
 
   if (!expense) {
@@ -322,8 +366,7 @@ function editExpense(id) {
     expense.date;
 
 
-  editingId =
-    id;
+  editingId = id;
 
 
   const button =
@@ -367,11 +410,13 @@ function deleteExpense(id) {
 
 
   expenses =
-    expenses.filter(function (expense) {
+    expenses.filter(
+      function (expense) {
 
-      return expense.id !== id;
+        return expense.id !== id;
 
-    });
+      }
+    );
 
 
   saveExpenses();
@@ -386,7 +431,7 @@ function deleteExpense(id) {
 
 
 // ==========================================
-// SET MONTHLY BUDGET
+// SET BUDGET
 // ==========================================
 
 setBudgetButton.addEventListener(
@@ -394,7 +439,9 @@ setBudgetButton.addEventListener(
   function () {
 
     const newBudget =
-      Number(budgetInput.value);
+      Number(
+        budgetInput.value
+      );
 
 
     if (
@@ -417,10 +464,7 @@ setBudgetButton.addEventListener(
 
     saveBudget();
 
-
-    budgetInput.value =
-      "";
-
+    budgetInput.value = "";
 
     updateSummary();
 
@@ -438,11 +482,16 @@ function updateSummary() {
 
   const totalSpent =
     expenses.reduce(
-      function (total, expense) {
+      function (
+        total,
+        expense
+      ) {
 
         return (
           total +
-          Number(expense.amount)
+          Number(
+            expense.amount
+          )
         );
 
       },
@@ -492,28 +541,24 @@ function updateBudgetAlert(
   if (!alertBox) {
 
     alertBox =
-      document.createElement("div");
-
+      document.createElement(
+        "div"
+      );
 
     alertBox.id =
       "budgetAlert";
 
-
     alertBox.style.margin =
       "15px 0";
-
 
     alertBox.style.padding =
       "15px";
 
-
     alertBox.style.borderRadius =
       "12px";
 
-
     alertBox.style.fontWeight =
       "bold";
-
 
     alertBox.style.textAlign =
       "center";
@@ -551,7 +596,6 @@ function updateBudgetAlert(
     (totalSpent / budget) * 100;
 
 
-  // OVER BUDGET
   if (remaining < 0) {
 
     alertBox.textContent =
@@ -559,56 +603,48 @@ function updateBudgetAlert(
         remaining
       ).toFixed(2)}.`;
 
-
     alertBox.style.background =
       "#fee2e2";
-
 
     alertBox.style.color =
       "#b91c1c";
 
   }
 
-
-  // 90% OR MORE
-  else if (percentage >= 90) {
+  else if (
+    percentage >= 90
+  ) {
 
     alertBox.textContent =
       `🔴 Budget almost finished! ₹${remaining.toFixed(
         2
       )} remaining.`;
 
-
     alertBox.style.background =
       "#ffedd5";
-
 
     alertBox.style.color =
       "#c2410c";
 
   }
 
-
-  // 70% OR MORE
-  else if (percentage >= 70) {
+  else if (
+    percentage >= 70
+  ) {
 
     alertBox.textContent =
       `⚠️ Budget warning: ${percentage.toFixed(
         0
       )}% used.`;
 
-
     alertBox.style.background =
       "#fef3c7";
-
 
     alertBox.style.color =
       "#92400e";
 
   }
 
-
-  // HEALTHY
   else {
 
     alertBox.textContent =
@@ -616,10 +652,8 @@ function updateBudgetAlert(
         2
       )} remaining.`;
 
-
     alertBox.style.background =
       "#dcfce7";
-
 
     alertBox.style.color =
       "#166534";
@@ -630,7 +664,7 @@ function updateBudgetAlert(
 
 
 // ==========================================
-// SPENDING ANALYTICS
+// ANALYTICS
 // ==========================================
 
 function updateAnalytics() {
@@ -644,28 +678,24 @@ function updateAnalytics() {
   if (!analytics) {
 
     analytics =
-      document.createElement("section");
-
+      document.createElement(
+        "section"
+      );
 
     analytics.id =
       "analyticsDashboard";
 
-
     analytics.style.background =
       "white";
-
 
     analytics.style.padding =
       "20px";
 
-
     analytics.style.borderRadius =
       "16px";
 
-
     analytics.style.marginBottom =
       "18px";
-
 
     analytics.style.boxShadow =
       "0 4px 15px rgba(0,0,0,0.07)";
@@ -687,7 +717,6 @@ function updateAnalytics() {
   }
 
 
-  // NO EXPENSES
   if (expenses.length === 0) {
 
     analytics.innerHTML = `
@@ -702,8 +731,7 @@ function updateAnalytics() {
           margin-top:10px;
         "
       >
-        Add expenses to see your
-        spending analytics.
+        Add expenses to see your spending analytics.
       </p>
 
     `;
@@ -718,7 +746,9 @@ function updateAnalytics() {
 
 
   const todayString =
-    getLocalDateString(today);
+    getLocalDateString(
+      today
+    );
 
 
   const currentYear =
@@ -729,48 +759,70 @@ function updateAnalytics() {
     today.getMonth();
 
 
-  // TODAY'S SPENDING
   const todaySpent =
     expenses
-      .filter(function (expense) {
+      .filter(
+        function (expense) {
 
-        return expense.date === todayString;
+          return (
+            expense.date ===
+            todayString
+          );
 
-      })
-      .reduce(function (total, expense) {
+        }
+      )
+      .reduce(
+        function (
+          total,
+          expense
+        ) {
 
-        return (
-          total +
-          Number(expense.amount)
-        );
+          return (
+            total +
+            Number(
+              expense.amount
+            )
+          );
 
-      }, 0);
-
-
-  // THIS MONTH'S EXPENSES
-  const monthExpenses =
-    expenses.filter(function (expense) {
-
-      const date =
-        parseDateLocal(expense.date);
-
-
-      return (
-        date.getFullYear() === currentYear &&
-        date.getMonth() === currentMonth
+        },
+        0
       );
 
-    });
+
+  const monthExpenses =
+    expenses.filter(
+      function (expense) {
+
+        const date =
+          new Date(
+            expense.date +
+            "T00:00:00"
+          );
 
 
-  // THIS MONTH'S SPENDING
+        return (
+          date.getFullYear() ===
+            currentYear &&
+          date.getMonth() ===
+            currentMonth
+        );
+
+      }
+    );
+
+
   const monthSpent =
     monthExpenses.reduce(
-      function (total, expense) {
+      function (
+        total,
+        expense
+      ) {
 
         return (
           total +
-          Number(expense.amount)
+          Number(
+            expense.amount
+          )
         );
 
       },
@@ -778,22 +830,29 @@ function updateAnalytics() {
     );
 
 
-  // HIGHEST EXPENSE
   const highestExpense =
     expenses.reduce(
-      function (highest, expense) {
+      function (
+        highest,
+        expense
+      ) {
 
-        return Number(expense.amount) >
-          Number(highest.amount)
-          ? expense
-          : highest;
+        return (
+          Number(
+            expense.amount
+          ) >
+          Number(
+            highest.amount
+          )
+            ? expense
+            : highest
+        );
 
       },
       expenses[0]
     );
 
 
-  // CATEGORY TOTALS
   const categoryTotals = {};
 
 
@@ -823,7 +882,6 @@ function updateAnalytics() {
   );
 
 
-  // TOP CATEGORY
   let topCategory =
     "None";
 
@@ -838,16 +896,19 @@ function updateAnalytics() {
     function (category) {
 
       if (
-        categoryTotals[category] >
+        categoryTotals[
+          category
+        ] >
         topCategoryAmount
       ) {
 
         topCategory =
           category;
 
-
         topCategoryAmount =
-          categoryTotals[category];
+          categoryTotals[
+            category
+          ];
 
       }
 
@@ -855,67 +916,43 @@ function updateAnalytics() {
   );
 
 
-  // AVERAGE DAILY SPENDING
-  const dates =
-    expenses
-      .map(function (expense) {
-
-        return parseDateLocal(
-          expense.date
-        );
-
-      })
-      .sort(function (a, b) {
-
-        return a - b;
-
-      });
-
-
   const firstExpenseDate =
-    dates[0];
-
-
-  const todayStart =
     new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate()
+      expenses[0].date +
+      "T00:00:00"
     );
-
-
-  const firstDateStart =
-    new Date(
-      firstExpenseDate.getFullYear(),
-      firstExpenseDate.getMonth(),
-      firstExpenseDate.getDate()
-    );
-
-
-  const millisecondsPerDay =
-    1000 * 60 * 60 * 24;
 
 
   const daysPassed =
     Math.max(
       1,
-      Math.floor(
+      Math.ceil(
         (
-          todayStart -
-          firstDateStart
+          today -
+          firstExpenseDate
         ) /
-        millisecondsPerDay
+        (
+          1000 *
+          60 *
+          60 *
+          24
+        )
       ) + 1
     );
 
 
   const totalSpent =
     expenses.reduce(
-      function (total, expense) {
+      function (
+        total,
+        expense
+      ) {
 
         return (
           total +
-          Number(expense.amount)
+          Number(
+            expense.amount
+          )
         );
 
       },
@@ -928,7 +965,6 @@ function updateAnalytics() {
     daysPassed;
 
 
-  // ANALYTICS UI
   analytics.innerHTML = `
 
     <h2>
@@ -946,14 +982,11 @@ function updateAnalytics() {
       "
     >
 
-
-      <div
-        style="
-          background:#f3f4f6;
-          padding:14px;
-          border-radius:12px;
-        "
-      >
+      <div style="
+        background:#f3f4f6;
+        padding:14px;
+        border-radius:12px;
+      ">
 
         <small>
           Today's Spending
@@ -966,13 +999,11 @@ function updateAnalytics() {
       </div>
 
 
-      <div
-        style="
-          background:#f3f4f6;
-          padding:14px;
-          border-radius:12px;
-        "
-      >
+      <div style="
+        background:#f3f4f6;
+        padding:14px;
+        border-radius:12px;
+      ">
 
         <small>
           This Month
@@ -985,13 +1016,11 @@ function updateAnalytics() {
       </div>
 
 
-      <div
-        style="
-          background:#f3f4f6;
-          padding:14px;
-          border-radius:12px;
-        "
-      >
+      <div style="
+        background:#f3f4f6;
+        padding:14px;
+        border-radius:12px;
+      ">
 
         <small>
           Average / Day
@@ -1004,13 +1033,11 @@ function updateAnalytics() {
       </div>
 
 
-      <div
-        style="
-          background:#f3f4f6;
-          padding:14px;
-          border-radius:12px;
-        "
-      >
+      <div style="
+        background:#f3f4f6;
+        padding:14px;
+        border-radius:12px;
+      ">
 
         <small>
           Highest Expense
@@ -1031,13 +1058,11 @@ function updateAnalytics() {
       </div>
 
 
-      <div
-        style="
-          background:#f3f4f6;
-          padding:14px;
-          border-radius:12px;
-        "
-      >
+      <div style="
+        background:#f3f4f6;
+        padding:14px;
+        border-radius:12px;
+      ">
 
         <small>
           Top Category
@@ -1055,7 +1080,6 @@ function updateAnalytics() {
 
       </div>
 
-
     </div>
 
   `;
@@ -1064,137 +1088,349 @@ function updateAnalytics() {
 
 
 // ==========================================
-// SET TODAY'S DATE
+// AI DASHBOARD
 // ==========================================
 
-function setTodayDate() {
+function createAIDashboard() {
 
-  if (!expenseDate) {
+  let aiSection =
+    document.getElementById(
+      "aiDashboard"
+    );
 
+
+  if (aiSection) {
     return;
-
   }
 
 
-  const today =
-    new Date();
+  aiSection =
+    document.createElement(
+      "section"
+    );
 
 
-  expenseDate.value =
-    getLocalDateString(today);
-
-}
+  aiSection.id =
+    "aiDashboard";
 
 
-// ==========================================
-// LOCAL DATE STRING
-// ==========================================
+  aiSection.style.background =
+    "white";
 
-function getLocalDateString(date) {
+  aiSection.style.padding =
+    "20px";
 
-  const year =
-    date.getFullYear();
+  aiSection.style.borderRadius =
+    "16px";
 
+  aiSection.style.marginBottom =
+    "18px";
 
-  const month =
-    String(
-      date.getMonth() + 1
-    ).padStart(2, "0");
-
-
-  const day =
-    String(
-      date.getDate()
-    ).padStart(2, "0");
+  aiSection.style.boxShadow =
+    "0 4px 15px rgba(0,0,0,0.07)";
 
 
-  return `${year}-${month}-${day}`;
+  aiSection.innerHTML = `
 
-}
-
-
-// ==========================================
-// PARSE DATE WITHOUT TIMEZONE PROBLEM
-// ==========================================
-
-function parseDateLocal(dateString) {
-
-  const parts =
-    dateString.split("-");
+    <h2>
+      🤖 AI Financial Assistant
+    </h2>
 
 
-  if (parts.length !== 3) {
+    <p
+      style="
+        color:#6b7280;
+        margin:8px 0 16px;
+      "
+    >
+      Get personalized insights from your expense data.
+    </p>
 
-    return new Date(dateString);
 
-  }
+    <div
+      style="
+        display:grid;
+        gap:10px;
+      "
+    >
+
+      <button
+        id="analyzeAIButton"
+        type="button"
+      >
+        🤖 Analyze My Spending
+      </button>
 
 
-  return new Date(
-    Number(parts[0]),
-    Number(parts[1]) - 1,
-    Number(parts[2])
+      <button
+        id="savingAIButton"
+        type="button"
+      >
+        💰 Give Me Smart Saving Tips
+      </button>
+
+
+      <div
+        style="
+          display:flex;
+          gap:8px;
+          margin-top:4px;
+        "
+      >
+
+        <input
+          id="aiQuestion"
+          type="text"
+          placeholder="Ask AI about your expenses..."
+          style="flex:1;"
+        >
+
+        <button
+          id="askAIButton"
+          type="button"
+        >
+          Ask
+        </button>
+
+      </div>
+
+
+      <div
+        id="aiResult"
+        style="
+          display:none;
+          margin-top:10px;
+          padding:15px;
+          background:#f3f4f6;
+          border-radius:12px;
+          line-height:1.6;
+          white-space:pre-wrap;
+        "
+      ></div>
+
+    </div>
+
+  `;
+
+
+  const container =
+    document.querySelector(
+      ".container"
+    );
+
+
+  container.insertBefore(
+    aiSection,
+    document.querySelector(
+      ".form-card"
+    )
   );
 
+
+  document
+    .getElementById(
+      "analyzeAIButton"
+    )
+    .addEventListener(
+      "click",
+      function () {
+
+        runAI(
+          "analyze"
+        );
+
+      }
+    );
+
+
+  document
+    .getElementById(
+      "savingAIButton"
+    )
+    .addEventListener(
+      "click",
+      function () {
+
+        runAI(
+          "saving"
+        );
+
+      }
+    );
+
+
+  document
+    .getElementById(
+      "askAIButton"
+    )
+    .addEventListener(
+      "click",
+      function () {
+
+        const question =
+          document
+            .getElementById(
+              "aiQuestion"
+            )
+            .value
+            .trim();
+
+
+        if (!question) {
+
+          alert(
+            "Please enter a question for AI."
+          );
+
+          return;
+
+        }
+
+
+        runAI(
+          "ask",
+          question
+        );
+
+      }
+    );
+
 }
 
 
 // ==========================================
-// FORMAT DATE
+// CALL CLOUDFLARE AI
 // ==========================================
 
-function formatDate(dateString) {
+async function runAI(
+  action,
+  question = ""
+) {
 
-  if (!dateString) {
+  const result =
+    document.getElementById(
+      "aiResult"
+    );
 
-    return "";
+
+  const analyzeButton =
+    document.getElementById(
+      "analyzeAIButton"
+    );
+
+
+  const savingButton =
+    document.getElementById(
+      "savingAIButton"
+    );
+
+
+  const askButton =
+    document.getElementById(
+      "askAIButton"
+    );
+
+
+  result.style.display =
+    "block";
+
+
+  result.textContent =
+    "🤖 AI is analyzing your expenses...";
+
+
+  analyzeButton.disabled =
+    true;
+
+  savingButton.disabled =
+    true;
+
+  askButton.disabled =
+    true;
+
+
+  try {
+
+    const response =
+      await fetch(
+        AI_BACKEND_URL,
+        {
+
+          method: "POST",
+
+          headers: {
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body:
+            JSON.stringify({
+
+              action:
+                action,
+
+              question:
+                question,
+
+              expenses:
+                expenses,
+
+              budget:
+                budget
+
+            })
+
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+
+      throw new Error(
+        data.message ||
+        "AI request failed."
+      );
+
+    }
+
+
+    result.textContent =
+      data.answer ||
+      "AI did not return an answer.";
+
 
   }
 
+  catch (error) {
 
-  const parts =
-    dateString.split("-");
+    console.error(
+      "AI Error:",
+      error
+    );
 
 
-  if (parts.length !== 3) {
-
-    return dateString;
+    result.textContent =
+      "❌ AI connection failed.\n\n" +
+      "Please check your internet connection and try again.";
 
   }
 
+  finally {
 
-  return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    analyzeButton.disabled =
+      false;
 
-}
+    savingButton.disabled =
+      false;
 
-
-// ==========================================
-// SECURITY
-// ==========================================
-
-function escapeHTML(text) {
-
-  const div =
-    document.createElement("div");
-
-
-  div.textContent =
-    String(text);
-
-
-  return div.innerHTML;
-
-}
-
-
-// ==========================================
-// START APPLICATION
-// ==========================================
-
-setTodayDate();
-
-displayExpenses();
-
-updateSummary();
-
-updateAnalytics();
+    askButton.disabled =
+  
